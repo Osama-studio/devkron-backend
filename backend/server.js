@@ -1,12 +1,10 @@
-// backend/server.js  (runs locally) 
-// If deploying to Vercel, see vercel.json note below.
+// backend/server.js
 
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const serverless = require('serverless-http');
 
-// ✅ FIXED PATHS (this file is in /backend, so use ./config, ./routes)
 const connectDB = require('./config/db');
 const contactRoutes = require('./routes/contact.route');
 
@@ -30,17 +28,18 @@ app.use(cors({
 
 app.use(express.json());
 
-// Health
+// Root + health (so hitting the project root won't 404)
+app.get('/', (req, res) => res.status(200).json({ ok: true, service: 'devkron-backend' }));
 app.get('/api/ping', (req, res) => res.status(200).json({ ok: true }));
 
-// Routes
+// API routes (your existing router)
 app.use('/api', contactRoutes);
 
 // --- DB connect once per cold start (serverless-safe) ---
 let dbReady = false;
 async function ensureDB() {
   if (dbReady) return;
-  await connectDB();
+  await connectDB();       // make sure this reads process.env.MONGO_URI
   dbReady = true;
 }
 
