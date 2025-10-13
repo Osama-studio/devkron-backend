@@ -15,7 +15,7 @@ module.exports = async function connectDB() {
     cached.promise = mongoose
       .connect(process.env.MONGO_URI, {
         // dbName optional if provided in URI; you can enforce:
-        // dbName: 'devkron_portfolio'
+        dbName: 'devkron_portfolio'
       })
       .then((m) => {
         console.log('MongoDB connected');

@@ -22,7 +22,7 @@ const submitContactForm = async (req, res) => {
     });
 
     const mailOptions = {
-      from: `${name} <${email}>`,
+      from: `${name} <${process.env.EMAIL_FROM}>`,
       to: 'devkronsoft@gmail.com',
       subject: `New Contact Form Submission: ${subject}`,
       text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`,
