@@ -22,15 +22,13 @@ const vercelPreviewRegex = /\.vercel\.app$/;
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Non-browser / server-to-server / Postman
-      if (!origin) return cb(null, true);
-
+      if (!origin) return cb(null, true); // server-to-server / Postman
       let allowed = allowedList.includes(origin);
       if (!allowed) {
         try {
           const hostname = new URL(origin).hostname;
-          if (vercelPreviewRegex.test(hostname)) allowed = true; // allow vercel previews
-        } catch (_) {}
+          if (vercelPreviewRegex.test(hostname)) allowed = true;
+        } catch {}
       }
       return allowed ? cb(null, true) : cb(new Error('Not allowed by CORS'));
     },
@@ -57,10 +55,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 /* ------------------------------ Health endpoints ------------------------------ */
-/* These DO NOT require DB and should respond instantly */
-app.get('/', (_req, res) =>
-  res.status(200).json({ ok: true, service: 'devkron-backend' })
-);
+app.get('/', (_req, res) => res.status(200).json({ ok: true, service: 'devkron-backend' }));
 app.get('/api/ping', (_req, res) => res.status(200).json({ ok: true }));
 
 /* -------------------------- Lazy DB connect middleware -------------------------- */
@@ -78,23 +73,21 @@ async function ensureDB(_req, _res, next) {
 }
 
 /* ---------------------------------- Routes ---------------------------------- */
-/* Only /api/* needs the DB */
 app.use('/api', ensureDB, contactRoutes);
 
 /* ------------------------------- Error handler ------------------------------- */
 app.use((err, req, res, _next) => {
   if (err && err.message === 'Not allowed by CORS') {
-    return res
-      .status(403)
-      .json({ error: 'CORS: origin not allowed', origin: req.headers.origin });
+    return res.status(403).json({ error: 'CORS: origin not allowed', origin: req.headers.origin });
   }
   console.error('Server error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
 /* -------------------------- Export for Vercel (serverless) -------------------------- */
-/* IMPORTANT: export the handler directly */
-module.exports = serverless(app);
+// IMPORTANT: wrap serverless(app) so Vercel receives a (req, res) handler.
+const handler = serverless(app);
+module.exports = (req, res) => handler(req, res);
 
 /* ------------------------------ Local development ------------------------------ */
 if (!process.env.VERCEL && require.main === module) {
