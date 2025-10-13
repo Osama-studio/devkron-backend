@@ -2,7 +2,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const serverless = require('serverless-http');
 
 const connectDB = require('./config/db');
 const contactRoutes = require('./routes/contact.route');
@@ -85,9 +84,8 @@ app.use((err, req, res, _next) => {
 });
 
 /* -------------------------- Export for Vercel (serverless) -------------------------- */
-// IMPORTANT: wrap serverless(app) so Vercel receives a (req, res) handler.
-const handler = serverless(app);
-module.exports = (req, res) => handler(req, res);
+/* For @vercel/node, just export a (req, res) handler. No serverless-http needed. */
+module.exports = (req, res) => app(req, res);
 
 /* ------------------------------ Local development ------------------------------ */
 if (!process.env.VERCEL && require.main === module) {
