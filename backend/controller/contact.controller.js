@@ -14,19 +14,25 @@ const submitContactForm = async (req, res) => {
 
     // Send email notification
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.office365.com',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_FROM,
         pass: process.env.EMAIL_PASS,
       },
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
+
 
     const mailOptions = {
       from: `${name} <${process.env.EMAIL_FROM}>`,
-      to: 'devkronsoft@gmail.com',
+      to: 'support@devkronsoft.com',
       subject: `New Contact Form Submission: ${subject}`,
       text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`,
-      replyTo:email
+      replyTo: email
     };
 
     await transporter.sendMail(mailOptions);
